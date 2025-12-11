@@ -1,0 +1,21 @@
+apiVersion: argoproj.io/v1alpha1
+kind: Application
+metadata:
+  name: todo-production
+  namespace: argocd
+spec:
+  project: default
+
+  source:
+    repoURL: https://github.com/Matiashonkasalo/Kubernetes_submissions
+    path: Project/environments/overlays/prod
+    targetRevision: HEAD
+
+  destination:
+    server: https://kubernetes.default.svc
+    namespace: production
+
+  syncPolicy:
+    automated:
+      prune: true
+      selfHeal: true

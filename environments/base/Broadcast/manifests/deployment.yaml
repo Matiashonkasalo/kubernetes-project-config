@@ -1,0 +1,26 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: broadcast-dep
+  namespace: project
+  labels: 
+    app: broadcast-pod
+spec:
+  replicas: 6
+  selector:
+    matchLabels:
+      app: broadcast-pod
+  template:
+    metadata:
+      labels:
+        app: broadcast-pod
+    spec:
+      containers:
+        - name: broadcast-container
+          image: PROJECT/BROADCAST
+
+          envFrom:
+          - configMapRef:
+              name: configmap-broadcast
+
+          

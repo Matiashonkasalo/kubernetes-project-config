@@ -1,0 +1,45 @@
+apiVersion: kustomize.config.k8s.io/v1beta1
+kind: Kustomization
+
+namespace: staging
+
+resources:
+  - ../../base
+
+namePrefix: staging-
+
+patches:
+  - target:
+      kind: Deployment
+      labelSelector: "app=broadcast-pod"
+    path: broadcaster_staging.yaml
+
+  - target:
+      kind: CronJob
+      labelSelector: "app=todo-db-backup"
+    path: db_patch.yaml
+    
+  - target:
+      kind: CronJob
+      labelSelector: "app=random-todo-generator"
+    path: cronjob_patch.yaml
+
+  - target:
+      kind: Deployment 
+      labelSelector: "app=backend"
+    path: deployment_db_patch.yaml
+
+  - target:
+      kind: HTTPRoute
+      labelSelector: "app=project-route"
+    path: route_staging_patch.yaml
+
+
+
+images:
+  - name: PROJECT/BACKEND
+    newName: europe-north1-docker.pkg.dev/dwk-gke-123456/backend-repo/backend-todo:staging
+  - name: PROJECT/FRONTEND
+    newName: europe-north1-docker.pkg.dev/dwk-gke-123456/frontend-repo/frontend-todo:staging
+  - name: PROJECT/BROADCAST
+    newName: europe-north1-docker.pkg.dev/dwk-gke-123456/broadcast-repo/broadcast:staging

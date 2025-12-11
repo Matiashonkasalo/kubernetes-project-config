@@ -1,0 +1,59 @@
+apiVersion: apps/v1
+kind: StatefulSet
+metadata:
+  name: mystatefulset
+  namespace: project
+spec:
+  selector:
+    matchLabels:
+      app: postgres-project
+  serviceName: project-postgres-service
+  replicas: 1
+  template:
+    metadata:
+      labels:
+        app: postgres-project
+    spec:
+      containers:
+      - name: postgres-project
+        image: postgres:16-alpine
+        ports:
+          - containerPort: 5432
+        envFrom:
+          - configMapRef:
+              name: configmap-project-backend
+
+        volumeMounts:
+          - name: postgres-data
+            mountPath: /var/lib/postgresql/data
+            subPath: postgres
+        resources:
+          requests:
+            cpu: "50m"
+            memory: "100Mi"
+          limits:
+            cpu: "200m"
+            memory: "300Mi"
+            
+  volumeClaimTemplates:
+  - metadata:
+      name: postgres-data
+    spec:
+      accessModes: [ "ReadWriteOnce" ]
+      resources:
+        requests:
+          storage: 1Gi
+
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: project-postgres-service
+  namespace: project
+spec:
+  clusterIP: None
+  selector:
+    app: postgres-project
+  ports:
+    - port: 5432
+      targetPort: 5432

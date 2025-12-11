@@ -1,0 +1,64 @@
+apiVersion: batch/v1
+kind: CronJob
+metadata:
+  name: todo-db-backup
+  namespace: project
+  labels: 
+    app: todo-db-backup
+spec:
+  schedule: "0 0 * * *"  # once per day at midnight
+  jobTemplate:
+    spec:
+      template:
+        spec:
+          containers:
+          - name: backup
+            image: google/cloud-sdk:latest
+            envFrom:
+              - configMapRef:
+                  name: configmap-project-backend
+            command:
+            - /bin/sh
+            - -c
+            - |
+              # Install pg_dump (PostgreSQL 16.x)
+              echo "Adding PostgreSQL APT repository..."
+              echo "deb http://apt.postgresql.org/pub/repos/apt bookworm-pgdg main" > /etc/apt/sources.list.d/pgdg.list
+              curl -fsSL https://www.postgresql.org/media/keys/ACCC4CF8.asc | apt-key add -
+
+              apt-get update
+              apt-get install -y postgresql-client-16
+              
+              echo "Setting Postgres password"
+              export PGPASSWORD=$POSTGRES_PASSWORD
+
+              echo "Authenticating to Google Cloud..."
+              gcloud auth activate-service-account --key-file=/var/secrets/key.json
+
+              echo "Dumping PostgreSQL database..."
+              pg_dump -h project-postgres-service \
+                      -U $POSTGRES_USER \
+                      -d $POSTGRES_DB \
+                      > /backup/todo-backup.sql
+
+              echo "Uploading to GCS..."
+              gsutil cp /backup/todo-backup.sql gs://dwk-backups-123456/todo-backup-$(date +%Y-%m-%d).sql
+
+              echo "Backup completed."
+
+            volumeMounts:
+            - name: gcs-key-volume
+              mountPath: /var/secrets
+            - name: backup-volume
+              mountPath: /backup
+
+          restartPolicy: OnFailure
+
+          volumes:
+          - name: gcs-key-volume
+            secret:
+              secretName: gcs-key
+
+          - name: backup-volume
+            emptyDir: {}
+

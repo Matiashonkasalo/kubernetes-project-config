@@ -1,0 +1,19 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: broadcast-dep
+  labels:
+    app: broadcast-pod
+spec:
+  template:
+    spec:
+      containers:
+      - name: broadcast-container
+        env:
+        - name: BROADCAST_MODE
+          value: "log_only"
+
+
+
+
+

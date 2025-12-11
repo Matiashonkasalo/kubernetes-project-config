@@ -1,0 +1,53 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: backend-deployment
+  namespace: project
+  labels: 
+    app: backend
+spec: # deployments selector
+  selector:
+    matchLabels:
+      app: backend
+  strategy:
+    type: Recreate
+  template: #pods template labels must match with deployments selector
+    metadata:
+      labels:
+        app: backend
+    spec:
+      containers:
+      - name: backend
+        image: PROJECT/BACKEND
+        env: 
+
+          - name: POSTGRES_URL
+            value: postgres://postgres:example@project-postgres-service:5432/project
+          
+          - name: PORT
+            value: "3002"
+          
+          - name: NATS_URL
+            value:  "nats://my-nats.project.svc.cluster.local:4222"
+
+        resources:
+          requests:
+            cpu: "25m"
+            memory: "50Mi"
+          limits:
+            cpu: "100m"
+            memory: "150Mi"
+        readinessProbe:
+          httpGet:
+            path: /healthz
+            port: 3002
+          initialDelaySeconds: 10
+          periodSeconds: 5
+        livenessProbe:
+          httpGet: 
+            path: /livez
+            port: 3002
+          initialDelaySeconds: 10
+          periodSeconds: 10
+
+

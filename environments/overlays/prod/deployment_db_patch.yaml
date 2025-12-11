@@ -1,0 +1,18 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: backend-deployment
+  labels:
+    app: backend
+spec:
+  template:
+    spec:
+      containers:
+      - name: backend
+        env:
+        - name: POSTGRES_URL
+          value: "postgres://postgres:example@production-project-postgres-service:5432/project"
+
+
+
+

@@ -1,0 +1,10 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: configmap-broadcast
+  namespace: project
+data:
+  NATS_URL:  "nats://my-nats.project.svc.cluster.local:4222"
+  WEBHOOK_URL: "https://webhook.site/2c404c0e-96f7-4504-a0cb-f331d4c26048"
+
+

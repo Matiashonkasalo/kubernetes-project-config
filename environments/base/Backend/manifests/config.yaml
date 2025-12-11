@@ -1,0 +1,10 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: configmap-project-backend
+  namespace: project
+data:
+  POSTGRES_USER: postgres
+  POSTGRES_PASSWORD: example
+  POSTGRES_DB: project
+  

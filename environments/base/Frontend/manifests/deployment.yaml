@@ -1,0 +1,57 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: project-dep
+  namespace: project
+spec:
+  selector:
+    matchLabels:
+      app: project
+  strategy:
+    type: Recreate
+  template:
+    metadata:
+      labels:
+        app: project
+    spec:
+      containers:
+      - name: project
+        image: PROJECT/FRONTEND
+        env: 
+          - name: PORT
+            value: "8000"
+        volumeMounts: 
+          - name: image-cache
+            mountPath: /shared
+        envFrom:
+            - configMapRef:
+                name: project-configmap
+        resources:
+            requests:
+              cpu: "25m"
+              memory: "50Mi"
+            limits:
+              cpu: "100m"
+              memory: "150Mi"
+        readinessProbe:
+          httpGet:
+            path: /healthz
+            port: 8000
+          initialDelaySeconds: 5
+          periodSeconds: 5
+        livenessProbe:
+          httpGet:
+            path: /healthz
+            port: 8000
+          initialDelaySeconds: 10
+          periodSeconds: 10
+
+      volumes:
+        - name: image-cache
+          persistentVolumeClaim:
+            claimName: project-pvc
+          
+          
+
+
+
